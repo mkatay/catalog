@@ -1,8 +1,11 @@
 package catalog;
 
+import java.io.BufferedReader;
+import java.io.FileReader;
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Scanner;
 
@@ -76,13 +79,28 @@ public class Catalog {
         }
         return foundItems;
     }
-    public void readFromFile(Paths path) throws IOException {
-        try (Scanner scanner = new Scanner(path.toString())) {
-            while(scanner.hasNextLine()){
-                String line=scanner.nextLine();
-                processLine(line);
+    public void readFromFile(String filePath){
+        try(BufferedReader bufferedReader = new BufferedReader(new FileReader(filePath))){
+            String line;
+            while ((line=bufferedReader.readLine())!=null){
+                String[] part=line.split(";");
+                String registrationNumber="R-"+catalogItems.size()+1;
+                /*List<String> authors=new ArrayList<>();
+                for (int i = 3; i <part.length ; i++) {
+                    authors.add(part[i]);
+                }*/
+                //rövidebben: az első 3 érték után szereplő összes értéket egy új módosítható listába menti
+                List<String> authors=new ArrayList<>(Arrays.asList(part).subList(3,part.length));
+                //Arrays.asList(part) -  a part tömböt List<String> típusú objektummá alakítja
+                //subList- részlistát ad vissza
+                LibraryItem book=new Book(part[1],Integer.parseInt(part[2]),authors);
+                CatalogItem item=new CatalogItem(registrationNumber,Integer.parseInt(part[0]),book);
+                catalogItems.add(item);
             }
+        }catch (IOException ioe){
+            System.out.println("Error reading file:"+ioe.getMessage());
         }
+
     }
 
     private  void processLine(String line){
